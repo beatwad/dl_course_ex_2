@@ -17,8 +17,14 @@ class TwoLayerNet:
         reg, float - L2 regularization strength
         """
         self.reg = reg
-        # TODO Create necessary layers
-        raise Exception("Not implemented!")
+        self.n_input = n_input
+        self.n_output = n_output
+        self.hidden_layer_size = hidden_layer_size
+
+        self.layer1 = FullyConnectedLayer(n_input, hidden_layer_size)
+        self.activation1 = ReLULayer()
+        self.layer2 = FullyConnectedLayer(hidden_layer_size, n_output)
+        self.activation2 = ReLULayer()
 
     def compute_loss_and_gradients(self, X, y):
         """
@@ -29,19 +35,46 @@ class TwoLayerNet:
         X, np array (batch_size, input_features) - input data
         y, np array of int (batch_size) - classes
         """
-        # Before running forward and backward pass through the model,
-        # clear parameter gradients aggregated from the previous pass
-        # TODO Set parameter gradient to zeros
-        # Hint: using self.params() might be useful!
-        raise Exception("Not implemented!")
-        
-        # TODO Compute loss and fill param gradients
-        # by running forward and backward passes through the model
-        
-        # After that, implement l2 regularization on all params
-        # Hint: self.params() is useful again!
-        raise Exception("Not implemented!")
-
+        # nullify layers gradients
+        self.params()['W1'].grad = np.zeros((self.n_input, self.hidden_layer_size))
+        self.params()['B1'].grad = np.zeros((1, self.hidden_layer_size))
+        self.params()['W2'].grad = np.zeros((self.hidden_layer_size, self.n_output))
+        self.params()['B2'].grad = np.zeros((1, self.n_output))
+        # forward layer 1
+        layer_forward1 = self.layer1.forward(X)
+        # forward activation funtcion 1
+        activation_forward1 = self.activation1.forward(layer_forward1)
+        # forward layer 2
+        layer_forward2 = self.layer2.forward(activation_forward1)
+        # forward activation funtcion 2
+        activation_forward2 = self.activation2.forward(layer_forward2)
+        # calculate loss
+        loss, grad = softmax_with_cross_entropy(activation_forward2, y)
+        # backward activation funtcion 2
+        activation_backward2 = self.activation2.backward(grad)
+        # backward layer 2
+        layer_backward2 = self.layer2.backward(activation_backward2)
+        # backward activation funtcion
+        activation_backward1 = self.activation1.backward(layer_backward2)
+        # backward layer 1
+        layer_backward1 = self.layer1.backward(activation_backward1)
+        # l2 regularization on all params
+        # W1_reg_loss, W1_reg_grad = l2_regularization(self.params()['W1'].value, self.reg)
+        # B1_reg_loss, B1_reg_grad = l2_regularization(self.params()['B1'].value, self.reg)
+        # W2_reg_loss, W2_reg_grad = l2_regularization(self.params()['W2'].value, self.reg)
+        # B2_reg_loss, B2_reg_grad = l2_regularization(self.params()['B2'].value, self.reg)
+        # update gradients
+        # self.params()['W1'].grad += W1_reg_grad
+        # self.params()['B1'].grad += B1_reg_grad
+        # self.params()['W2'].grad += W2_reg_grad
+        # self.params()['B2'].grad += B2_reg_grad
+        # update loss
+        # loss += (W1_reg_loss + W2_reg_loss + B1_reg_loss + B2_reg_loss)
+        # update layers weights
+        self.params()['W1'].value -= self.params()['W1'].grad
+        self.params()['B1'].value -= self.params()['B1'].grad
+        self.params()['W2'].value -= self.params()['W2'].grad
+        self.params()['B2'].value -= self.params()['B2'].grad
         return loss
 
     def predict(self, X):
@@ -63,10 +96,6 @@ class TwoLayerNet:
         return pred
 
     def params(self):
-        result = {}
-
-        # TODO Implement aggregating all of the params
-
-        raise Exception("Not implemented!")
-
+        result = {'W1': self.layer1.params()['W'], 'B1': self.layer1.params()['B'],
+                  'W2': self.layer2.params()['W'], 'B2': self.layer2.params()['B']}
         return result

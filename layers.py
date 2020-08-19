@@ -98,7 +98,7 @@ class ReLULayer:
 
     def forward(self, X):
         self.X = X
-        return np.maximum(X, 0)
+        return np.maximum(self.X, 0)
 
     def backward(self, d_out):
         """
@@ -147,24 +147,14 @@ class FullyConnectedLayer:
         d_result: np array (batch_size, n_input) - gradient
           with respect to input
         """
-
-        # TODO: Implement backward pass
-        # Compute both gradient with respect to input
-        # and gradients with respect to W and B
-        # Add gradients of W and B to their `grad` attribute
-        # n = d_out.shape[0]
         X = self.X
         W = self.params()['W'].value
-        B = self.params()['B'].value
-        d_result = np.dot(d_out, W.T)
+        dresult = np.dot(d_out, W.T)
         dW = np.dot(X.T, d_out)
-        self.params()['W'].grad = dW
-        dB = np.sum(d_out, axis=0, keepdims=True)
-        print(f'd_out\n{d_out}\n')
-        print(f'dB\n{dB}\n')
-        print(f'np.sum(d_out, axis=0)\n{np.sum(d_out, axis=0)}\n')
-        self.params()['B'].grad = dB
-        return d_result
+        dB = np.dot(np.ones((1, d_out.shape[0])), d_out)
+        self.params()['W'].grad += dW
+        self.params()['B'].grad += dB
+        return dresult
 
     def params(self):
         return {'W': self.W, 'B': self.B}
