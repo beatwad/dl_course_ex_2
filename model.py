@@ -22,9 +22,8 @@ class TwoLayerNet:
         self.hidden_layer_size = hidden_layer_size
 
         self.layer1 = FullyConnectedLayer(n_input, hidden_layer_size)
-        self.activation1 = ReLULayer()
+        self.activation = ReLULayer()
         self.layer2 = FullyConnectedLayer(hidden_layer_size, n_output)
-        self.activation2 = ReLULayer()
 
     def compute_loss_and_gradients(self, X, y):
         """
@@ -42,39 +41,35 @@ class TwoLayerNet:
         self.params()['B2'].grad = np.zeros((1, self.n_output))
         # forward layer 1
         layer_forward1 = self.layer1.forward(X)
-        # forward activation funtcion 1
-        activation_forward1 = self.activation1.forward(layer_forward1)
-        # forward layer 2
-        layer_forward2 = self.layer2.forward(activation_forward1)
-        # forward activation funtcion 2
-        activation_forward2 = self.activation2.forward(layer_forward2)
+        # # forward activation funtcion
+        activation_forward = self.activation.forward(layer_forward1)
+        # # forward layer 2
+        layer_forward2 = self.layer2.forward(activation_forward)
         # calculate loss
-        loss, grad = softmax_with_cross_entropy(activation_forward2, y)
-        # backward activation funtcion 2
-        activation_backward2 = self.activation2.backward(grad)
-        # backward layer 2
-        layer_backward2 = self.layer2.backward(activation_backward2)
-        # backward activation funtcion
-        activation_backward1 = self.activation1.backward(layer_backward2)
+        loss, grad = softmax_with_cross_entropy(layer_forward2, y)
+        # # backward layer 2
+        layer_backward2 = self.layer2.backward(grad)
+        # # backward activation funtcion
+        activation_backward = self.activation.backward(layer_backward2)
         # backward layer 1
-        layer_backward1 = self.layer1.backward(activation_backward1)
+        layer_backward1 = self.layer1.backward(activation_backward)
         # l2 regularization on all params
-        # W1_reg_loss, W1_reg_grad = l2_regularization(self.params()['W1'].value, self.reg)
-        # B1_reg_loss, B1_reg_grad = l2_regularization(self.params()['B1'].value, self.reg)
-        # W2_reg_loss, W2_reg_grad = l2_regularization(self.params()['W2'].value, self.reg)
-        # B2_reg_loss, B2_reg_grad = l2_regularization(self.params()['B2'].value, self.reg)
+        W1_reg_loss, W1_reg_grad = l2_regularization(self.params()['W1'].value, self.reg)
+        B1_reg_loss, B1_reg_grad = l2_regularization(self.params()['B1'].value, self.reg)
+        W2_reg_loss, W2_reg_grad = l2_regularization(self.params()['W2'].value, self.reg)
+        B2_reg_loss, B2_reg_grad = l2_regularization(self.params()['B2'].value, self.reg)
         # update gradients
-        # self.params()['W1'].grad += W1_reg_grad
-        # self.params()['B1'].grad += B1_reg_grad
-        # self.params()['W2'].grad += W2_reg_grad
-        # self.params()['B2'].grad += B2_reg_grad
+        self.params()['W1'].grad += W1_reg_grad
+        self.params()['B1'].grad += B1_reg_grad
+        self.params()['W2'].grad += W2_reg_grad
+        self.params()['B2'].grad += B2_reg_grad
         # update loss
-        # loss += (W1_reg_loss + W2_reg_loss + B1_reg_loss + B2_reg_loss)
+        loss += (W1_reg_loss + W2_reg_loss + B1_reg_loss + B2_reg_loss)
         # update layers weights
-        self.params()['W1'].value -= self.params()['W1'].grad
-        self.params()['B1'].value -= self.params()['B1'].grad
-        self.params()['W2'].value -= self.params()['W2'].grad
-        self.params()['B2'].value -= self.params()['B2'].grad
+        # self.params()['W1'].value -= self.params()['W1'].grad
+        # self.params()['B1'].value -= self.params()['B1'].grad
+        # self.params()['W2'].value -= self.params()['W2'].grad
+        # self.params()['B2'].value -= self.params()['B2'].grad
         return loss
 
     def predict(self, X):
