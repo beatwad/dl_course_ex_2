@@ -59,17 +59,12 @@ class TwoLayerNet:
         W2_reg_loss, W2_reg_grad = l2_regularization(self.params()['W2'].value, self.reg)
         B2_reg_loss, B2_reg_grad = l2_regularization(self.params()['B2'].value, self.reg)
         # update gradients
-        self.params()['W1'].grad += W1_reg_grad
-        self.params()['B1'].grad += B1_reg_grad
-        self.params()['W2'].grad += W2_reg_grad
-        self.params()['B2'].grad += B2_reg_grad
+        self.params()['W1'].grad += W1_reg_grad/X.shape[0]
+        self.params()['B1'].grad += B1_reg_grad/X.shape[0]
+        self.params()['W2'].grad += W2_reg_grad/X.shape[0]
+        self.params()['B2'].grad += B2_reg_grad/X.shape[0]
         # update loss
-        loss += (W1_reg_loss + W2_reg_loss + B1_reg_loss + B2_reg_loss)
-        # update layers weights
-        # self.params()['W1'].value -= self.params()['W1'].grad
-        # self.params()['B1'].value -= self.params()['B1'].grad
-        # self.params()['W2'].value -= self.params()['W2'].grad
-        # self.params()['B2'].value -= self.params()['B2'].grad
+        loss += (W1_reg_loss + W2_reg_loss + B1_reg_loss + B2_reg_loss)/X.shape[0]
         return loss
 
     def predict(self, X):
@@ -82,12 +77,10 @@ class TwoLayerNet:
         Returns:
           y_pred, np.array of int (test_samples)
         """
-        # TODO: Implement predict
-        # Hint: some of the code of the compute_loss_and_gradients
-        # can be reused
-        pred = np.zeros(X.shape[0], np.int)
-
-        raise Exception("Not implemented!")
+        layer_forward1 = self.layer1.forward(X)
+        activation_forward = self.activation.forward(layer_forward1)
+        prediciton = self.layer2.forward(activation_forward)
+        pred = prediciton.argmax(axis=1)
         return pred
 
     def params(self):

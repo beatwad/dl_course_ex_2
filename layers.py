@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.metrics import log_loss
 
 
 def l2_regularization(W, reg_strength):
@@ -13,7 +14,7 @@ def l2_regularization(W, reg_strength):
       loss, single value - l2 regularization loss
       gradient, np.array same shape as W - gradient of weight by l2 loss
     """
-    loss = reg_strength*np.sum(W**2)
+    loss = reg_strength*np.sum(np.square(W))
     grad = 2*reg_strength*W
     return loss, grad
 
@@ -49,12 +50,10 @@ def cross_entropy_loss(probs, target_index):
       loss: single value
     """
     mask_array = np.zeros(probs.shape, dtype=int)
-    ce_loss = np.zeros(probs.shape[0], dtype=np.float)
     for i in range(probs.shape[0]):
         mask_array[i, target_index[i]] = 1
-    for i in range(probs.shape[0]):
-        ce_loss[i] = -np.sum(mask_array[i] * np.log(probs[i]))
-    return np.average(ce_loss)
+    ce_loss = log_loss(mask_array, probs)
+    return ce_loss
 
 
 def softmax_with_cross_entropy(predictions, target_index):
